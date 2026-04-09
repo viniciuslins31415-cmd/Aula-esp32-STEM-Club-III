@@ -1,0 +1,53 @@
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEServer.h>
+
+#define LED_PIN 2
+
+#define SERVICE_UUID        "1234"
+#define CHARACTERISTIC_UUID "5678"
+
+class MyCallbacks : public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+    String value = pCharacteristic->getValue();
+
+    if (value.length() > 0) {
+
+      uint8_t recebido = value[0]; // pega o byte
+
+      Serial.print("Recebido: ");
+      Serial.println(recebido);
+
+      //completar aqui...
+    }
+  }
+};
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
+
+  BLEDevice::init("ESP32_LED");
+
+  BLEServer *pServer = BLEDevice::createServer();
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+
+  BLECharacteristic *pCharacteristic = pService->createCharacteristic(
+                                         CHARACTERISTIC_UUID,
+                                         BLECharacteristic::PROPERTY_WRITE
+                                       );
+
+  pCharacteristic->setCallbacks(new MyCallbacks());
+
+  pService->start();
+
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->start();
+
+  Serial.println("Pronto! Envie 0x01 ou 0x00");
+}
+
+void loop() {
+}
