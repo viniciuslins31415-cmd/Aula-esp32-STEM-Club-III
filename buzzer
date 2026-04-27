@@ -1,0 +1,19 @@
+#define BUZZER 15
+#define TOUCH_PIN T0  // GPIO 4
+
+void setup() {
+  Serial.begin(115200);
+}
+
+void loop() {
+  int valor = touchRead(TOUCH_PIN);
+  Serial.println(valor);
+
+  if (valor < 500) {
+    tone(BUZZER, 292)
+  } else {
+    noTone(BUZZER);
+  }
+  
+  delay(50);
+}
