@@ -1,0 +1,79 @@
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEServer.h>
+
+// ================= DISPLAY =================
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+// ================= BLE =================
+#define SERVICE_UUID        "12345678-1234-1234-1234-1234567890ab"
+#define CHARACTERISTIC_UUID "abcd1234-5678-1234-5678-abcdef123456"
+
+// ================= VARIÁVEL GLOBAL =================
+String textoRecebido = "";
+
+// ================= Completar código abaixo =================
+
+
+
+// ================= CALLBACK BLE =================
+class MyCallbacks: public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+
+    String value = pCharacteristic->getValue(); //
+
+    if (value.length() > 0) {
+      textoRecebido = value;
+      Serial.println("Recebido: " + textoRecebido);
+      mostrarTexto();
+    }
+  }
+};
+
+// ================= SETUP =================
+void setup() {
+  Serial.begin(115200);
+
+  // Inicializa display
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println("Erro no display");
+    while(true);
+  }
+
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setCursor(0, 10);
+  display.println("Aguardando...");
+  display.display();
+
+  // Inicializa BLE
+  BLEDevice::init("ESP32_BLE_Display");
+  BLEServer *pServer = BLEDevice::createServer();
+
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+
+  BLECharacteristic *pCharacteristic = pService->createCharacteristic(
+                      CHARACTERISTIC_UUID,
+                      BLECharacteristic::PROPERTY_WRITE
+                    );
+
+  pCharacteristic->setCallbacks(new MyCallbacks());
+
+  pService->start();
+
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->start();
+
+  Serial.println("Bluetooth pronto!");
+}
+
+// ================= LOOP =================
+void loop() {
+  // nada aqui (BLE funciona por evento)
+}
