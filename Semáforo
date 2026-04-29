@@ -1,0 +1,68 @@
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEServer.h>
+
+// ================= PINOS =================
+#define LED_VERMELHO 25
+#define LED_AMARELO 26
+#define LED_VERDE 27
+
+// ================= BLE =================
+#define SERVICE_UUID        "12345678-1234-1234-1234-1234567890ab"
+#define CHARACTERISTIC_UUID "abcd1234-5678-1234-5678-abcdef123456"
+
+// ================= FUNÇÃO =================
+void desligarTodos() {
+  digitalWrite(LED_VERMELHO, LOW);
+  digitalWrite(LED_AMARELO, LOW);
+  digitalWrite(LED_VERDE, LOW);
+}
+
+// ================= CALLBACK =================
+class MyCallbacks: public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic *pCharacteristic) {
+
+    String comando = pCharacteristic->getValue();
+    comando.trim(); // remove espaços
+
+    Serial.println("Recebido: " + comando);
+
+    desligarTodos();
+
+    //====   Completar código abaixo ====
+
+
+  }
+};
+
+// ================= SETUP =================
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(LED_VERMELHO, OUTPUT);
+  pinMode(LED_AMARELO, OUTPUT);
+  pinMode(LED_VERDE, OUTPUT);
+
+  desligarTodos();
+
+  BLEDevice::init("ESP32_Semaforo");
+  BLEServer *pServer = BLEDevice::createServer();
+
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+
+  BLECharacteristic *pCharacteristic = pService->createCharacteristic(
+                      CHARACTERISTIC_UUID,
+                      BLECharacteristic::PROPERTY_WRITE
+                    );
+
+  pCharacteristic->setCallbacks(new MyCallbacks());
+
+  pService->start();
+  BLEDevice::getAdvertising()->start();
+
+  Serial.println("Semaforo pronto!");
+}
+
+// ================= LOOP =================
+void loop() {
+}
