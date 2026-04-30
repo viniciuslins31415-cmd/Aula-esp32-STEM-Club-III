@@ -29,9 +29,18 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
     desligarTodos();
 
-    //====   Completar código abaixo ====
-
-
+    if (comando == "R") {
+      digitalWrite(LED_VERMELHO, HIGH);
+    }
+    else if (comando == "Y") {
+      digitalWrite(LED_AMARELO, HIGH);
+    }
+    else if (comando == "G") {
+      digitalWrite(LED_VERDE, HIGH);
+    }
+    else if (comando == "OFF") {
+      desligarTodos();
+    }
   }
 };
 
